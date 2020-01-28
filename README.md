@@ -22,7 +22,7 @@ A rule unit is constituted by primarily by
 
 In this post we'll focus on data definitions, rules and queries.
 
-**Data definitions** are given by declaring a plain-old Java object that may contain data sources. Each data source represents a partition of the working memory that your rules will pattern match against or insert to. 
+**Data definitions** are given by declaring a Java class that may contain data sources. Each data source represents a partition of the working memory that your rules will pattern match against or insert to. 
 
 For instance, suppose you want to declare an alerting service that receives events and produces alerts
 depending on some conditions. We declare `Event` and `Alert` objects as follows:
