@@ -282,4 +282,4 @@ if you declare the query `Warnings` you will still be able to POST to `http://lo
 
 ## Conclusion
 
-We have given a sneak peek on the work that has recently landed on master. With these changes, we hope to have provided a more streamlined way to define knowledge-based services. Developers will always able to be more explicit about the data they want to process, by opting-in to writing Java; but if they want, they can embrace a fully DSL-centric development workflow.
+We have given a sneak peek on the work that we are doing to improve the getting started experience with rules and processes in Kogito. With these changes, we hope to have provided a more streamlined way to define knowledge-based services. Developers will always able to be more explicit about the data they want to process, by opting-in to writing Java; but if they want, they can embrace a fully DSL-centric development workflow.
