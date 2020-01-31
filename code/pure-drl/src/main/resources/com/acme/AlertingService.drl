@@ -1,3 +1,4 @@
+
 package com.acme;
 unit AlertingService;
 
@@ -14,18 +15,19 @@ declare Alert
 end
 
 declare AlertingService extends RuleUnitData
-   eventData: DataStream<Event>
-   alertData: DataStream<Alert>
+   eventData: DataStore<Event>
+   alertData: DataStore<Alert>
 end
 
 rule IncomingEvent when
    // matches when a temperature higher than 30 °C is registered (OOPath syntax)
    $e : /eventData [ type == "temperature", value >= 30 ] 
 then
-   System.out.println("incoming event: "+ $e.getMessage());
-   alertData.append( new Alert( "warning", $e ) );
+   System.out.println("incoming event: "+ $e);
+   alertData.add( new Alert( "warning", $e.toString() ) );
 end
 
 query Warnings
    alerts: /alertData [ severity == "warning" ]
 end
+
