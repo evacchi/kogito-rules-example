@@ -147,6 +147,10 @@ Drop this DRL to `src/main/resources` folder
 
 ```java
 package com.acme;
+unit AlertingService;
+
+import org.kie.kogito.rules.DataStream;
+import org.kie.kogito.rules.RuleUnitData;
 
 declare Event
    type:  String
@@ -163,14 +167,12 @@ declare AlertingService extends RuleUnitData
    alertData: DataStream<Alert>
 end
 
-unit AlertingService;
-
 rule IncomingEvent when
    // matches when a temperature higher than 30 °C is registered (OOPath syntax)
    $e : /eventData [ type == "temperature", value >= 30 ] 
 then
    System.out.println("incoming event: "+ $e.getMessage());
-   alertData.append( new Alert( "warning", $e ) );
+   alertData.append( new Alert( "warning", "Temperature is too high: " + $e ) );
 end
 
 query Warnings
@@ -232,6 +234,10 @@ You can now drop the process and the following DRL to `src/main/resources` folde
 
 ```java
 package com.acme;
+unit AlertingService;
+
+import org.kie.kogito.rules.DataStream;
+import org.kie.kogito.rules.RuleUnitData; 
 
 declare Event
    type:  String
@@ -243,14 +249,13 @@ declare Alert
   message:  String
 end
 
-unit AlertingService;
 
 rule IncomingEvent when
    // matches when a temperature higher than 30 °C is registered (OOPath syntax)
    $e : /eventData [ type == "temperature", value >= 30 ]
 then
    System.out.println("incoming event: "+ $e.getMessage());
-   alertData.append( new Alert( "warning", $e ) );
+   alertData.append( new Alert( "warning",  "Temperature is too high: " + $e ) );
 end
 ```
 
@@ -260,19 +265,23 @@ the contents of the variables as a response; it will generate the endpoint `/Ale
 	$ curl -X POST \
            -H 'Accept: application/json' \
            -H 'Content-Type: application/json' \
-           -d '{ "eventData": [ { "type": "temperature", "value" : 40 } ] }' \
+           -d '{ "eventData": { "type": "temperature", "value" : 40 } }' \
            http://localhost:8080/AlertingWorkflow
 
 The reply will be:
 
 
 ```json
-{ 
-   "eventData" : [ { "type": "temperature", "value" : 40 } ],
-   "alertData" : [ { 
-      "severity": "warning", 
-      "message" : "Temperature is too high" 
-   } ] 
+{
+  "id": ...,
+  "eventData": {
+    "type": "temperature",
+    "value": 100
+  },
+  "alertData": {
+    "severity": "warning",
+    "message": "Temperature is too high: Event( type=temperature, value=100 )"
+  }
 }
 ```
 

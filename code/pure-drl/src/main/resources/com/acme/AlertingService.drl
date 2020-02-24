@@ -1,8 +1,9 @@
-
 package com.acme;
 unit AlertingService;
 
-import org.kie.kogito.rules.*;
+import org.kie.kogito.rules.DataStream;
+import org.kie.kogito.rules.RuleUnitData 
+
 
 declare Event
    type:  String
@@ -15,19 +16,19 @@ declare Alert
 end
 
 declare AlertingService extends RuleUnitData
-   eventData: DataStore<Event>
-   alertData: DataStore<Alert>
+   eventData: DataStream<Event>
+   alertData: DataStream<Alert>
 end
+
 
 rule IncomingEvent when
    // matches when a temperature higher than 30 °C is registered (OOPath syntax)
    $e : /eventData [ type == "temperature", value >= 30 ] 
 then
    System.out.println("incoming event: "+ $e);
-   alertData.add( new Alert( "warning", $e.toString() ) );
+   alertData.append( new Alert( "warning", $e.toString() ) );
 end
 
 query Warnings
    alerts: /alertData [ severity == "warning" ]
 end
-
