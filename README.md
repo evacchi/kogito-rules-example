@@ -145,10 +145,9 @@ Bootstrap your Kogito service with the archetype:
          -DartifactId=sample-kogito
 ```
 
-At the moment, no Quarkus version bundles Kogito 0.8.0; otherwise, you would be able to use
- `mvn io.quarkus:quarkus-maven-plugin:create` instead.
+At the moment, no Quarkus version bundles Kogito 0.8.0; otherwise, you would be able to use `mvn io.quarkus:quarkus-maven-plugin:create` instead.
 
-Now, clear the contents of `src/main` and then, drop this DRL to `src/main/resources` folder instead:
+Now, clear the contents of `src/main` and then, drop this DRL to `src/main/resources/com/acme` folder instead:
 
 ```java
 package com.acme;
@@ -187,15 +186,19 @@ end
 
 Now fire up the Quarkus service in deveveloper mode with:
 
+```sh
 	$ mvn compile quarkus:dev
+```
 
 There you go, you are now ready to `curl` your service:
 
+```sh
 	$ curl -X POST \
            -H 'Accept: application/json' \
            -H 'Content-Type: application/json' \
            -d '{ "eventData": [ { "type": "temperature", "value" : 40 } ] }' \
            http://localhost:8080/warnings
+```
 
 ## Workflow Integration
 
@@ -235,7 +238,44 @@ You are still free to explicitly declare the unit `com.acme.AlertingService`; in
 
 Note: You may have noticed that we are using the "Rule Flow Group" field. We will a more explicit support to the UI in the future.
 
-You can now drop the process and the following DRL to `src/main/resources` folder.
+Bootstrap your Kogito service with the archetype:
+
+```sh
+      mvn archetype:generate \
+         -DarchetypeGroupId=org.kie.kogito \
+         -DarchetypeArtifactId=kogito-quarkus-archetype \
+         -DarchetypeVersion=0.8.0 \
+         -DgroupId=com.acme \
+         -DartifactId=sample-kogito
+```
+
+**Caveat**. Support for this feature is experimental, so it may not work seamlessly
+with Quarkus hot code reload; we also need the following extra step to enable it, but this will change in the future.
+
+Update your `pom.xml` with the following plugin declaration:
+
+```xml
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.kie.kogito</groupId>
+        <artifactId>kogito-maven-plugin</artifactId>
+        <version>0.8.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generateDeclaredTypes</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      ...
+    </plugins>
+   </build>
+
+```
+
+You can now clear the contents of `src/main`, and then drop the process and the following DRL to `src/main/resources/com/acme` folder.
 
 ```java
 package com.acme;
@@ -267,11 +307,13 @@ end
 As you may have noticed, you are not required to declare a query explicitly: the process will display
 the contents of the variables as a response; it will generate the endpoint `/AlertingWorkflow`, and it accept a `POST` request of the following form:
 
+```sh
 	$ curl -X POST \
            -H 'Accept: application/json' \
            -H 'Content-Type: application/json' \
            -d '{ "eventData": { "type": "temperature", "value" : 40 } }' \
            http://localhost:8080/AlertingWorkflow
+```
 
 The reply will be:
 
@@ -301,8 +343,7 @@ as follows:
            -d '{ "eventData": { "type": "temperature", "value" : 40 } }' \
            http://localhost:8080/warnings
 
-Notice that the request no longer contains a list of Events. This is because processes declare `SingletonStore`s instead of `DataStream`s.
-A `SingletonStore` is just a special type of data source that contains at most 1 value. 
+Notice that the request no longer contains a list of Events. This is because process variables are mapped to single values instead of DataStreams. 
 
 ## Conclusion
 
