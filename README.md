@@ -129,21 +129,26 @@ declare AlertingService extends RuleUnitData
 end
 ```
 
-In version 0.8.0 (not out yet), we are lifting these limitations: we allow limited inheritance for interfaces (only one is allowed for now) and generic type declaration for fields. With these new features, the following piece of code becomes valid DRL.
+In version 0.8.0, we are lifting these limitations: we allow limited inheritance for interfaces (only one is allowed for now) and generic type declaration for fields. With these new features, the following piece of code becomes valid DRL.
 
 Long story short: **you are now able to declared a full microservice
 from a single DRL**.
 
-Bootstrap your Kogito service with
+Bootstrap your Kogito service with the archetype:
 
 ```sh
-	$ mvn io.quarkus:quarkus-maven-plugin:create \
-			-DprojectGroupId=com.acme \
-			-DprojectArtifactId=kogito-rules \
-			-Dextensions="kogito"
+      mvn archetype:generate \
+         -DarchetypeGroupId=org.kie.kogito \
+         -DarchetypeArtifactId=kogito-quarkus-archetype \
+         -DarchetypeVersion=0.8.0 \
+         -DgroupId=com.acme \
+         -DartifactId=sample-kogito
 ```
 
-Drop this DRL to `src/main/resources` folder
+At the moment, no Quarkus version bundles Kogito 0.8.0; otherwise, you would be able to use
+ `mvn io.quarkus:quarkus-maven-plugin:create` instead.
+
+Now, clear the contents of `src/main` and then, drop this DRL to `src/main/resources` folder instead:
 
 ```java
 package com.acme;
@@ -180,7 +185,7 @@ query Warnings
 end
 ```
 
-then fire up the Quarkus instance with:
+Now fire up the Quarkus service in deveveloper mode with:
 
 	$ mvn compile quarkus:dev
 
@@ -255,7 +260,7 @@ rule IncomingEvent when
    $e : /eventData [ type == "temperature", value >= 30 ]
 then
    System.out.println("incoming event: "+ $e.getMessage());
-   alertData.append( new Alert( "warning",  "Temperature is too high: " + $e ) );
+   alertData.set( new Alert( "warning",  "Temperature is too high: " + $e ) );
 end
 ```
 
@@ -286,9 +291,22 @@ The reply will be:
 ```
 
 However, if you *do* declare a query, a separate endpoint will be available as well. For instance
-if you declare the query `Warnings` you will still be able to POST to `http://localhost:8080/warnings` and invoke the rule service separately.
+if you declare the query `Warnings` you will still be able to POST to `http://localhost:8080/warnings` and invoke the rule service separately
+as follows:
 
+
+	$ curl -X POST \
+           -H 'Accept: application/json' \
+           -H 'Content-Type: application/json' \
+           -d '{ "eventData": { "type": "temperature", "value" : 40 } }' \
+           http://localhost:8080/warnings
+
+Notice that the request no longer contains a list of Events. This is because processes declare `SingletonStore`s instead of `DataStream`s.
+A `SingletonStore` is just a special type of data source that contains at most 1 value. 
 
 ## Conclusion
 
 We have given a sneak peek on the work that we are doing to improve the getting started experience with rules and processes in Kogito. With these changes, we hope to have provided a more streamlined way to define knowledge-based services. Developers will always able to be more explicit about the data they want to process, by opting-in to writing Java; but if they want, they can embrace a fully DSL-centric development workflow.
+
+
+_For the lazies, examples are available at https://github.com/evacchi/kogito-rules-example/tree/master/code Have fun!_
